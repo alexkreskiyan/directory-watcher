@@ -1,0 +1,6 @@
+﻿namespace DirectoryWatcher
+{
+    class Watcher
+    {
+    }
+}
