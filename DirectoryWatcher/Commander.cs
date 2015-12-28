@@ -27,14 +27,10 @@ namespace DirectoryWatcher
         public void Start(CountdownEvent countdown)
         {
             Countdown = countdown;
-            new Thread(Run)
-            {
-                Name = "Commander"
-            }
-            .Start();
+            ThreadPool.QueueUserWorkItem(Run);
         }
 
-        private void Run()
+        private void Run(object state)
         {
             Debug.WriteLine("Starting commander");
 
