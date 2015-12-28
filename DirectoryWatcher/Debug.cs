@@ -25,7 +25,6 @@ namespace DirectoryWatcher
             Write(string.Format(format, args));
         }
 
-
         private void Write(string message)
         {
             var builder = new StringBuilder(DateTime.Now.ToString("HH:mm:ss.ffff "));
