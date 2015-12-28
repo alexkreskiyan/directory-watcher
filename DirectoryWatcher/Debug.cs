@@ -6,21 +6,21 @@ namespace DirectoryWatcher
 {
     internal class Debug
     {
-        private static object consoleLocker = new object();
+        private object consoleLocker = new object();
 
         [Conditional("DEBUG")]
-        public static void WriteLine(string message)
+        public void WriteLine(string message)
         {
             Write(message);
         }
 
         [Conditional("DEBUG")]
-        public static void WriteLine(string format, params object[] args)
+        public void WriteLine(string format, params object[] args)
         {
             Write(string.Format(format, args));
         }
 
-        private static void Write(string message)
+        private void Write(string message)
         {
             lock (consoleLocker)
             {

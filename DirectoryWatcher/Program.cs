@@ -4,6 +4,8 @@ namespace DirectoryWatcher
 {
     internal class Program
     {
+        private static Debug Debug = new Debug();
+
         private static void Main(string[] args)
         {
             Thread.CurrentThread.Name = "Main";
@@ -16,7 +18,7 @@ namespace DirectoryWatcher
                 return;
             }
 
-            new Service().Run(args[0]);
+            new Service(Debug).Run(args[0]);
         }
     }
 }

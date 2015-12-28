@@ -4,8 +4,16 @@ namespace DirectoryWatcher
 {
     internal class Service
     {
-        private Commander Commander = new Commander();
-        private ConfigurationWatcher ConfigurationWatcher = new ConfigurationWatcher();
+        private Debug Debug;
+        private Commander Commander;
+        private ConfigurationWatcher ConfigurationWatcher;
+
+        public Service(Debug debug)
+        {
+            Debug = debug;
+            Commander = new Commander(Debug);
+            ConfigurationWatcher = new ConfigurationWatcher(Debug);
+        }
 
         public void Run(string configurationPath)
         {

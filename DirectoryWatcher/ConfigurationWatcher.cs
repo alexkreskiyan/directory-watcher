@@ -5,6 +5,12 @@ namespace DirectoryWatcher
     internal class ConfigurationWatcher
     {
         private bool Active;
+        private Debug Debug;
+
+        public ConfigurationWatcher(Debug debug)
+        {
+            Debug = debug;
+        }
 
         public void Start(string path)
         {

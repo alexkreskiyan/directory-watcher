@@ -10,17 +10,12 @@ namespace DirectoryWatcher
 
         public event EventHandler Shutdown;
 
+        private Debug Debug;
         private CountdownEvent Countdown;
 
-        private void HandleShutdown(object sender, ConsoleCancelEventArgs e)
+        public Commander(Debug debug)
         {
-            Debug.WriteLine("Handle Shutdown event");
-
-            e.Cancel = true;
-
-            Shutdown?.Invoke(this, e);
-
-            Countdown.Signal();
+            Debug = debug;
         }
 
         public void Start(CountdownEvent countdown)
@@ -33,7 +28,12 @@ namespace DirectoryWatcher
         {
             Debug.WriteLine("Starting commander");
 
-            Console.CancelKeyPress += HandleShutdown;
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true;
+                Shutdown?.Invoke(this, e);
+                Countdown.Signal();
+            };
 
             var commandName = Console.ReadLine();
             while (commandName != null)
