@@ -18,8 +18,7 @@ namespace DirectoryWatcher
 
             e.Cancel = true;
 
-            if (Shutdown != null)
-                Shutdown(this, EventArgs.Empty);
+            Shutdown?.Invoke(this, e);
 
             Countdown.Signal();
         }
@@ -36,24 +35,24 @@ namespace DirectoryWatcher
 
             Console.CancelKeyPress += HandleShutdown;
 
-            var command = Console.ReadLine();
-            while (command != null)
+            var commandName = Console.ReadLine();
+            while (commandName != null)
             {
-                SendCommand(command);
-                command = Console.ReadLine();
+                SendCommand(commandName);
+                commandName = Console.ReadLine();
             }
         }
 
-        private void SendCommand(string command)
+        private void SendCommand(string name)
         {
-            if (!Commands.ContainsKey(command))
+            if (!Commands.ContainsKey(name))
             {
-                Debug.WriteLine("Unknown command `{0}`", command);
+                Debug.WriteLine("Unknown command `{0}`", name);
                 return;
             }
 
-            Debug.WriteLine("Run command `{0}`", command);
-            Commands[command]();
+            Debug.WriteLine("Run command `{0}`", name);
+            Commands[name]?.Invoke();
         }
     }
 }
