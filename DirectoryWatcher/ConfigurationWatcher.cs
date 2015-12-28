@@ -1,32 +1,32 @@
-﻿using System.IO;
+﻿using System.Threading;
 
 namespace DirectoryWatcher
 {
     internal class ConfigurationWatcher
     {
-        private bool Active;
         private Debug Debug;
+        private CountdownEvent Countdown;
 
         public ConfigurationWatcher(Debug debug)
         {
             Debug = debug;
         }
 
-        public void Start(string path)
+        public void Start(CountdownEvent countdown, string path)
         {
-            if (!File.Exists(path))
-                throw new FileNotFoundException(string.Format("Configuration file `{0}` doesn't exist", path), path);
+            Countdown = countdown;
+            ThreadPool.QueueUserWorkItem((state) => Run(path));
+        }
 
+        private void Run(string path)
+        {
             Debug.WriteLine("Starting configuration watcher");
-
-            Active = true;
         }
 
         public void Stop()
         {
             Debug.WriteLine("Stopping configuration watcher");
-
-            Active = false;
+            Countdown.Signal();
         }
     }
 }

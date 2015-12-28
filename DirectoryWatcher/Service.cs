@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 
 namespace DirectoryWatcher
 {
@@ -17,13 +18,19 @@ namespace DirectoryWatcher
 
         public void Run(string configurationPath)
         {
-            using (var countdown = new CountdownEvent(1))
+            if (!File.Exists(configurationPath))
+            {
+                Debug.WriteLine("Configuration file `{0}` doesn't exist", configurationPath);
+                return;
+            }
+
+            using (var countdown = new CountdownEvent(2))
             {
                 Commander.Commands.Add("test", () => Debug.WriteLine("test"));
                 Commander.Shutdown += (sender, e) => Shutdown();
                 Commander.Start(countdown);
 
-                ConfigurationWatcher.Start(configurationPath);
+                ConfigurationWatcher.Start(countdown, configurationPath);
 
                 countdown.Wait();
             }
@@ -32,6 +39,7 @@ namespace DirectoryWatcher
         private void Shutdown()
         {
             Debug.WriteLine("Shutdown requested...");
+            ConfigurationWatcher.Stop();
         }
     }
 }
