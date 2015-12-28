@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
+using System.Text;
 
 namespace DirectoryWatcher
 {
     internal class Debug
     {
-        private object consoleLocker = new object();
+        public string Name { get; }
+
+        public Debug(string name)
+        {
+            Name = name;
+        }
 
         [Conditional("DEBUG")]
         public void WriteLine(string message)
@@ -20,14 +25,13 @@ namespace DirectoryWatcher
             Write(string.Format(format, args));
         }
 
+
         private void Write(string message)
         {
-            lock (consoleLocker)
-            {
-                Console.Write(DateTime.Now.ToString("HH:mm:ss.ffff "));
-                Console.Write("{0,-15} ", string.Concat('[', Thread.CurrentThread.Name, ']'));
-                Console.WriteLine(message);
-            }
+            var builder = new StringBuilder(DateTime.Now.ToString("HH:mm:ss.ffff "));
+            builder.Append(string.Format("{0,-15} ", string.Concat('[', Name, ']')));
+            builder.Append(message);
+            Console.WriteLine(builder.ToString());
         }
     }
 }

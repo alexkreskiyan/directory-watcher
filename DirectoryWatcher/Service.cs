@@ -1,45 +1,44 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 using System.Threading;
 
 namespace DirectoryWatcher
 {
     internal class Service
     {
-        private Debug Debug;
+        public Debug Debug { get; }
         private Commander Commander;
         private ConfigurationWatcher ConfigurationWatcher;
+        private CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
-        public Service(Debug debug)
+        private List<Worker> Workers { get; } = new List<Worker>();
+
+        public Service(Debug debug, string configurationPath)
         {
             Debug = debug;
-            Commander = new Commander(Debug);
-            ConfigurationWatcher = new ConfigurationWatcher(Debug);
+
+            Workers.Add(Commander = new Commander(this, "Commander"));
+            Workers.Add(ConfigurationWatcher = new ConfigurationWatcher(this, "Configuration Watcher", configurationPath));
         }
 
-        public void Run(string configurationPath)
+        public void Run()
         {
-            if (!File.Exists(configurationPath))
-            {
-                Debug.WriteLine("Configuration file `{0}` doesn't exist", configurationPath);
-                return;
-            }
-
-            using (var countdown = new CountdownEvent(2))
+            using (var countdown = new CountdownEvent(Workers.Count))
             {
                 Commander.Commands.Add("test", () => Debug.WriteLine("test"));
                 Commander.Shutdown += (sender, e) => Shutdown();
-                Commander.Start(countdown);
 
-                ConfigurationWatcher.Start(countdown, configurationPath);
+                foreach (var worker in Workers)
+                    worker.Start(countdown, CancellationTokenSource.Token);
 
                 countdown.Wait();
+                Debug.WriteLine("END");
             }
         }
 
-        private void Shutdown()
+        public void Shutdown()
         {
             Debug.WriteLine("Shutdown requested...");
-            ConfigurationWatcher.Stop();
+            CancellationTokenSource.Cancel();
         }
     }
 }

@@ -1,32 +1,27 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 
 namespace DirectoryWatcher
 {
-    internal class ConfigurationWatcher
+    internal class ConfigurationWatcher : Worker
     {
-        private Debug Debug;
-        private CountdownEvent Countdown;
+        private string Path;
 
-        public ConfigurationWatcher(Debug debug)
+        public ConfigurationWatcher(Service service, string name, string path)
+            : base(service, name)
         {
-            Debug = debug;
+            Path = path;
         }
 
-        public void Start(CountdownEvent countdown, string path)
+        protected override void Run(CancellationToken token)
         {
-            Countdown = countdown;
-            ThreadPool.QueueUserWorkItem((state) => Run(path));
-        }
+            Debug.WriteLine("Running configuration watcher");
 
-        private void Run(string path)
-        {
+            if (!File.Exists(Path))
+                throw new FileNotFoundException(string.Format("Project configuration file `{0}` not found", Path), Path);
+
             Debug.WriteLine("Starting configuration watcher");
-        }
-
-        public void Stop()
-        {
-            Debug.WriteLine("Stopping configuration watcher");
-            Countdown.Signal();
+            Thread.Sleep(10000);
         }
     }
 }

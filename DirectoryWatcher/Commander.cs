@@ -1,46 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DirectoryWatcher
 {
-    internal class Commander
+    internal class Commander : Worker
     {
         public Dictionary<string, Action> Commands { get; } = new Dictionary<string, Action>();
 
         public event EventHandler Shutdown;
 
-        private Debug Debug;
-        private CountdownEvent Countdown;
+        public Commander(Service service, string name)
+            : base(service, name)
+        { }
 
-        public Commander(Debug debug)
+        protected override void Run(CancellationToken token)
         {
-            Debug = debug;
-        }
-
-        public void Start(CountdownEvent countdown)
-        {
-            Countdown = countdown;
-            ThreadPool.QueueUserWorkItem(Run);
-        }
-
-        private void Run(object state)
-        {
-            Debug.WriteLine("Starting commander");
+            Debug.WriteLine("Running commander");
 
             Console.CancelKeyPress += (sender, e) =>
             {
                 e.Cancel = true;
+                Debug.WriteLine("Notify shutdown");
                 Shutdown?.Invoke(this, e);
-                Countdown.Signal();
             };
 
-            var commandName = Console.ReadLine();
+            Debug.WriteLine("Read console input async...");
+            var commandName = ReadCommandAsync(token);
             while (commandName != null)
             {
                 SendCommand(commandName);
-                commandName = Console.ReadLine();
+                Debug.WriteLine("Read console input async...");
+                commandName = ReadCommandAsync(token);
             }
+        }
+
+        private string ReadCommandAsync(CancellationToken token)
+        {
+            return Task.Run(() => Console.ReadLine(), token).Result;
         }
 
         private void SendCommand(string name)

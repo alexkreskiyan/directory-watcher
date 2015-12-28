@@ -1,14 +1,11 @@
-﻿using System.Threading;
-
-namespace DirectoryWatcher
+﻿namespace DirectoryWatcher
 {
     internal class Program
     {
-        private static Debug Debug = new Debug();
+        private static Debug Debug = new Debug("Main");
 
         private static void Main(string[] args)
         {
-            Thread.CurrentThread.Name = "Main";
             Debug.WriteLine("Booting up...");
 
             //shutdown if no arguments
@@ -18,7 +15,7 @@ namespace DirectoryWatcher
                 return;
             }
 
-            new Service(Debug).Run(args[0]);
+            new Service(Debug, args[0]).Run();
         }
     }
 }
