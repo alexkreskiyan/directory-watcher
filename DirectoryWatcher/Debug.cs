@@ -6,6 +6,8 @@ namespace DirectoryWatcher
 {
     internal class Debug
     {
+        private static object consoleLocker = new object();
+
         [Conditional("DEBUG")]
         public static void WriteLine(string message)
         {
@@ -20,9 +22,12 @@ namespace DirectoryWatcher
 
         private static void Write(string message)
         {
-            Console.Write(DateTime.Now.ToString("HH:mm:ss.ffff "));
-            Console.Write("{0,-15} ", string.Concat('[', Thread.CurrentThread.Name, ']'));
-            Console.WriteLine(message);
+            lock (consoleLocker)
+            {
+                Console.Write(DateTime.Now.ToString("HH:mm:ss.ffff "));
+                Console.Write("{0,-15} ", string.Concat('[', Thread.CurrentThread.Name, ']'));
+                Console.WriteLine(message);
+            }
         }
     }
 }

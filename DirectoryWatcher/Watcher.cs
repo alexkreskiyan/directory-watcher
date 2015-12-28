@@ -1,6 +1,6 @@
 ﻿namespace DirectoryWatcher
 {
-    class Watcher
+    internal class Watcher
     {
     }
 }

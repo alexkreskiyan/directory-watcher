@@ -6,34 +6,50 @@ namespace DirectoryWatcher
 {
     internal class Commander
     {
-        private bool Active;
-
         public Dictionary<string, Action> Commands { get; } = new Dictionary<string, Action>();
 
-        public void Start()
+        public event EventHandler Shutdown;
+
+        private CountdownEvent Countdown;
+
+        private void HandleShutdown(object sender, ConsoleCancelEventArgs e)
+        {
+            Debug.WriteLine("Handle Shutdown event");
+
+            e.Cancel = true;
+
+            if (Shutdown != null)
+                Shutdown(this, EventArgs.Empty);
+
+            Countdown.Signal();
+        }
+
+        public void Start(CountdownEvent countdown)
+        {
+            Countdown = countdown;
+            new Thread(Run)
+            {
+                Name = "Commander"
+            }
+            .Start();
+        }
+
+        private void Run()
         {
             Debug.WriteLine("Starting commander");
 
-            Active = true;
-            while (Active)
+            Console.CancelKeyPress += HandleShutdown;
+
+            var command = Console.ReadLine();
+            while (command != null)
             {
-                SendCommand(Console.ReadLine());
-                Thread.Sleep(50);
+                SendCommand(command);
+                command = Console.ReadLine();
             }
-        }
-
-        public void Stop()
-        {
-            Debug.WriteLine("Stopping commander");
-
-            Active = false;
         }
 
         private void SendCommand(string command)
         {
-            if (command == null)
-                return;
-
             if (!Commands.ContainsKey(command))
             {
                 Debug.WriteLine("Unknown command `{0}`", command);
