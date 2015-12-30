@@ -17,8 +17,6 @@ namespace DirectoryWatcher
 
         protected override void Run(CancellationToken token)
         {
-            Debug.WriteLine("Running commander");
-
             Console.CancelKeyPress += (sender, e) =>
             {
                 e.Cancel = true;
@@ -26,19 +24,20 @@ namespace DirectoryWatcher
                 Shutdown?.Invoke(this, e);
             };
 
-            Debug.WriteLine("Read console input async...");
             var commandName = ReadCommandAsync(token);
             while (commandName != null)
             {
                 SendCommand(commandName);
-                Debug.WriteLine("Read console input async...");
                 commandName = ReadCommandAsync(token);
             }
         }
 
         private string ReadCommandAsync(CancellationToken token)
         {
-            return Task.Run(() => Console.ReadLine(), token).Result;
+            var task = Task.Run(() => Console.ReadLine(), token);
+            task.Wait(token);
+
+            return task.Result;
         }
 
         private void SendCommand(string name)

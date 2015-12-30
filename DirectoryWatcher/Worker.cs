@@ -42,15 +42,31 @@ namespace DirectoryWatcher
             }
 
             //catch operation cancellation
+            catch (AggregateException exception)
+            when (exception.InnerException is OperationCanceledException)
+            {
+                Debug.WriteLine("Worker cancelled");
+            }
+
+            //catch operation cancellation
             catch (OperationCanceledException)
             {
                 Debug.WriteLine("Worker cancelled");
             }
 
-            //catch unhandled exceptions
-            catch (Exception ex)
+            //catch aggregate exception
+            catch (AggregateException exception)
             {
-                Debug.WriteLine("Uncaught worker exception: `{0}`", ex.Message);
+                Debug.WriteLine("Uncaught worker exceptions:");
+                foreach (var innerException in exception.Flatten().InnerExceptions)
+                    Debug.WriteLine(innerException.Message);
+                Service.Shutdown();
+            }
+
+            //catch unhandled exceptions
+            catch (Exception exception)
+            {
+                Debug.WriteLine("Uncaught worker exception: `{0}`", exception.Message);
                 Service.Shutdown();
             }
             Debug.WriteLine("Running worker finished...");

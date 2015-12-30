@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 
 namespace DirectoryWatcher
 {
@@ -15,13 +14,17 @@ namespace DirectoryWatcher
 
         protected override void Run(CancellationToken token)
         {
-            Debug.WriteLine("Running configuration watcher");
-
-            if (!File.Exists(Path))
-                throw new FileNotFoundException(string.Format("Project configuration file `{0}` not found", Path), Path);
-
-            Debug.WriteLine("Starting configuration watcher");
-            Thread.Sleep(10000);
+            using (var watcher = new FileWatcher(Path))
+            {
+                watcher.Changed += (sender, e) => Debug.WriteLine("Configuration file changed");
+                watcher.Removed += (sender, e) =>
+                {
+                    Debug.WriteLine("Configuration file removed");
+                    Service.Shutdown();
+                };
+                token.WaitHandle.WaitOne();
+                Debug.WriteLine("Shutting down configuration watcher");
+            }
         }
     }
 }

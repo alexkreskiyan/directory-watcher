@@ -27,10 +27,13 @@ namespace DirectoryWatcher
 
         private void Write(string message)
         {
-            var builder = new StringBuilder(DateTime.Now.ToString("HH:mm:ss.ffff "));
-            builder.Append(string.Format("{0,-15} ", string.Concat('[', Name, ']')));
-            builder.Append(message);
-            Console.WriteLine(builder.ToString());
+            lock (Console.Out)
+            {
+                var builder = new StringBuilder(DateTime.Now.ToString("HH:mm:ss.ffff "));
+                builder.Append(string.Format("{0,-15} ", string.Concat('[', Name, ']')));
+                builder.Append(message);
+                Console.WriteLine(builder.ToString());
+            }
         }
     }
 }
