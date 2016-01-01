@@ -5,7 +5,7 @@ using Timer = System.Timers.Timer;
 
 namespace DirectoryWatcher
 {
-    class FileWatcher : IDisposable
+    internal class FileWatcher : IDisposable
     {
         private FileInfo File;
         private FileSystemWatcher Watcher;
@@ -13,6 +13,7 @@ namespace DirectoryWatcher
         private Timer NotFoundTimer;
 
         public event EventHandler Changed;
+
         public event EventHandler Removed;
 
         public FileWatcher(string path)

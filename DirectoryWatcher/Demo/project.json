@@ -1,2 +1,4 @@
 ﻿{
+"include":["aaa.xs","bbb.xs"],
+"includeRegex":["/^(?:aaa|bbb){1,3}.xs$/"]
 }

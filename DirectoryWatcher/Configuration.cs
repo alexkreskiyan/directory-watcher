@@ -11,6 +11,6 @@ namespace DirectoryWatcher
 
         public List<string> Exclude { get; set; }
 
-        public List<Regex> Enclude { get; set; }
+        public List<Regex> ExcludeRegex { get; set; }
     }
 }
