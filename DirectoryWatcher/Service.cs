@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace DirectoryWatcher
 {
     internal class Service
     {
-        public Debug Debug { get; }
+        public event EventHandler ConfigurationChanged;
+        public event EventHandler SourcesChanged;
+
+        private Debug Debug;
         private Commander Commander;
         private ConfigurationWatcher ConfigurationWatcher;
         private CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();

@@ -1,12 +1,17 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.Reactive.Linq;
 using System.Threading;
 
 namespace DirectoryWatcher
 {
     internal class ConfigurationWatcher : Worker
     {
+        public event EventHandler ConfigurationChanged;
+        public event EventHandler SourceRulesChanged;
         private FileInfo File;
+        private RawConfiguration Configuration;
 
         public ConfigurationWatcher(Service service, string name, string path)
             : base(service, name)
@@ -18,37 +23,56 @@ namespace DirectoryWatcher
         {
             using (var watcher = new FileWatcher(File.FullName))
             {
-                LogFile();
-                watcher.Changed += (sender, e) =>
+                Configuration = GetConfiguration();
+
+                var observable = Observable.FromEventPattern(
+                    handler => watcher.Changed += handler,
+                    handler => watcher.Changed -= handler
+                )
+                .Throttle(TimeSpan.FromMilliseconds(200))
+                .Subscribe(e =>
                 {
                     Debug.WriteLine("Configuration file changed");
-                    LogFile();
-                };
+                    HandleUpdate();
+                });
+
                 watcher.Removed += (sender, e) =>
                 {
                     Debug.WriteLine("Configuration file removed");
                     Service.Shutdown();
                 };
+
+                //wait until cancelled
                 token.WaitHandle.WaitOne();
                 Debug.WriteLine("Shutting down configuration watcher");
+                observable.Dispose();
             }
         }
 
-        private void LogFile()
+        private void HandleUpdate()
+        {
+            //get actual configuration
+            var configuration = GetConfiguration();
+        }
+
+        private RawConfiguration GetConfiguration()
         {
             using (var stream = File.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(stream))
             {
                 var content = reader.ReadToEnd();
-                var configuration = JsonConvert.DeserializeObject<Configuration>(content);
-                if (configuration != null)
+
+                return JsonConvert.DeserializeObject<RawConfiguration>(content, new JsonSerializerSettings()
                 {
-                    Debug.WriteLine("Include:{0}", configuration.Include?.Count);
-                    Debug.WriteLine("IncludeRegex:{0}", configuration.IncludeRegex?.Count);
-                    Debug.WriteLine("Exclude:{0}", configuration.Exclude?.Count);
-                    Debug.WriteLine("ExcludeRegex:{0}", configuration.ExcludeRegex?.Count);
-                }
+                    MissingMemberHandling = MissingMemberHandling.Error,
+                    NullValueHandling = NullValueHandling.Include
+                });
             }
         }
+    }
+
+    internal class ConfigurationUpdateEventArgs
+    {
+
     }
 }
